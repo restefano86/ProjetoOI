@@ -3,17 +3,24 @@ package br.com.projetooi.controller;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
 import javax.transaction.Transactional;
 
+import br.com.projetooi.model.SimpleEntityManager;
 import br.com.projetooi.model.usuario.Usuario;
+import br.com.projetooi.model.usuario.UsuarioDAO;
 import br.com.projetooi.utils.EmailUtils;
+import br.com.projetooi.utils.EntityManagerUtil;
 
 
 public class UsuarioController extends DefaultController {
-    @PersistenceContext(unitName = "ProjetoOiPU", type = PersistenceContextType.EXTENDED)
-    private EntityManager entityManager;
+	private SimpleEntityManager simpleEntityManager;
+	
+	private UsuarioDAO usuarioDAO;
+    
+    public UsuarioController() {
+    	simpleEntityManager = new SimpleEntityManager("ProjetoOiPU");
+    	usuarioDAO = new UsuarioDAO(simpleEntityManager.getEntityManager());
+	}
 
     @Transactional
  	public void saveUsuario(Usuario usuario) throws Exception{
@@ -36,17 +43,25 @@ public class UsuarioController extends DefaultController {
     
     @Transactional
  	public Usuario confirmarUsuario(Integer idUsuario) throws Exception{
-     	EntityManagerFactory emf =  Persistence.createEntityManagerFactory("ProjetoOiPU");
-     	EntityManager em = emf.createEntityManager();
-     	Usuario usuario = new Usuario();
-     	usuario.setIdUsuario(idUsuario);
-     	Usuario u = (Usuario)entityManager.find(Usuario.class, idUsuario);
-     	
-     	entityManager.getTransaction().begin();
-     	u.setIsAtivado("S");
-//     	em.flush();
-     	entityManager.getTransaction().commit();
-     	return u;
+//     	EntityManagerFactory emf =  Persistence.createEntityManagerFactory("ProjetoOiPU");
+//     	EntityManager em = emf.createEntityManager();
+//     	Usuario usuario = new Usuario();
+//     	usuario.setIdUsuario(idUsuario);
+    	Usuario u = usuarioDAO.getById(idUsuario);
+    	
+    	try {
+			
+    		
+    		simpleEntityManager.beginTransaction();
+    		u.setIsAtivado("S");
+    		usuarioDAO.save(u);
+        } catch(Exception e){
+            e.printStackTrace();
+            simpleEntityManager.rollBack();
+		} finally {
+			simpleEntityManager.close();
+		}
+    	return u;
  	}
 
 }

@@ -6,11 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 @Entity
 public class Usuario  implements java.io.Serializable {
+
+	private static final long serialVersionUID = -8655507279227388640L;
 
 	@Id 
     @Column(name="idUsuario", unique=true, nullable=false)
